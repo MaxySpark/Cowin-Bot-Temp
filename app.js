@@ -29,7 +29,7 @@ setTimeout(async () => {
 
 setInterval(async () => {
     await getData();
-}, 900000)
+}, 120000)
 
 app.get('/', async function (req, res, next) {
     const data = await getSlot();
@@ -45,7 +45,7 @@ async function sendTelegram(data) {
         json: true,
         body: {
             "chat_id": "59180442",
-            "text": `<pre>${data.map(o => `|${o.name}|${o.address}|${o.sessions.date}|${o.sessions.available}\n`).join('\n')}</pre>`,
+            "text": `${data.map(o => `|${o.name}|${o.address}|<i>${o.sessions.date}</i>| <b>**${o.sessions.available}**</b> |${o.sessions.vaccine}|${o.sessions.age}\n`).join('\n')}`,
             parse_mode: 'HTML'
         }
     })
@@ -64,19 +64,31 @@ function formatData(obj) {
         return {
             name: o.name,
             address: o.address,
-            // sessions: o.sessions.map(s => {
-            //   return {
-            //     date: s.date,
-            //     available: s.available_capacity
-            //   }
-            // }),
-            sessions: {
-                date: o.sessions[0].date,
-                available: o.sessions[0].available_capacity
-            }
+            sessions: o.sessions.map(s => {
+              return {
+                date: s.date,
+                available: s.available_capacity,
+                vaccine: s.vaccine,
+                age: s.min_age_limit
+              }
+            })
         }
     });
-    const filter = _.filter(data, o => o.sessions.available !== 0);
+
+
+    const fm = _.flatMap(data, o => {
+        const arr = [];
+        o.sessions.forEach((e, i) => {
+            arr.push({
+                name: o.name,
+                address: o.address,
+                sessions: o.sessions[i]
+            })
+        })
+        return arr;
+    })
+
+    const filter = _.filter(fm, o => o.sessions.available !== 0);
     return filter;
 }
 
