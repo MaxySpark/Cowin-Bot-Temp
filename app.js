@@ -55,6 +55,7 @@ async function sendTelegram(data) {
 async function getSlot() {
     const url = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=53&date=`
     const today = moment().format('DD-MM-YYYY');
+    console.log(moment().format('DD-MM-YYYY hh:mm A'));
     const data = await rp.get(`${url}${today}`).json();
     return formatData(data);
 }
